@@ -36,10 +36,10 @@ Token expires per `JWT_EXPIRES_IN` (default 7 days).
 ### List published posts
 
 ```
-GET /api/posts?page=1&limit=20&tag=tech
+GET /api/posts?page=1&limit=20&tag=tech&series=getting-started
 ```
 
-All query params are optional. Returns only published, non-deleted posts. If a post has `anonymous: true`, the `authors` field is returned as an empty array.
+All query params are optional. Returns only published, non-deleted posts. Filter by `tag` or `series`. If a post has `anonymous: true`, the `authors` field is returned as an empty array.
 
 **Response:**
 ```json
@@ -54,6 +54,7 @@ All query params are optional. Returns only published, non-deleted posts. If a p
       "excerpt": "A short summary",
       "cover_image": "https://...",
       "tags": ["tech"],
+      "series": "getting-started",
       "published_at": "2024-01-01T00:00:00.000Z",
       "status": "published",
       "body_html": "<p>Content...</p>",
@@ -88,12 +89,13 @@ POST /api/posts
   "excerpt": "A brief summary",
   "cover_image": "https://...",
   "tags": ["tech", "news"],
+  "series": "getting-started",
   "content_blocks": [],
   "status": "draft"
 }
 ```
 
-Only `title` is required. Defaults to `draft` status. If `authors` is omitted, defaults to the authenticated admin.
+Only `title` is required. Defaults to `draft` status. If `authors` is omitted, defaults to the authenticated admin. `series` is an optional string indicating which series the post belongs to (max 200 chars).
 
 ### Update post (auth required)
 

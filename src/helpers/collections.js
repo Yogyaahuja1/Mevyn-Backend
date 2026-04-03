@@ -19,6 +19,7 @@ async function setupIndexes() {
     { key: { slug: 1 }, unique: true },
     { key: { status: 1, published_at: -1 } },
     { key: { tags: 1 } },
+    { key: { series: 1 } },
   ]);
 
   await db.collection(COLLECTIONS.EVENTS).createIndexes([

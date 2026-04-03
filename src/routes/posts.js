@@ -27,6 +27,7 @@ router.post(
     tags: { type: 'array' },
     content_blocks: { type: 'array' },
     status: { type: 'string', enum: ['draft', 'published'] },
+    series: { type: 'string', maxLength: 200 },
   }),
   ctrl.create
 );
@@ -44,6 +45,7 @@ router.put(
     tags: { type: 'array' },
     content_blocks: { type: 'array' },
     status: { type: 'string', enum: ['draft', 'published'] },
+    series: { type: 'string', maxLength: 200 },
   }),
   ctrl.update
 );

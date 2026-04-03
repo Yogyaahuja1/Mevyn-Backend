@@ -55,6 +55,7 @@ async function listPublished(req, res, next) {
 
     const filter = { status: 'published', deleted_at: null };
     if (req.query.tag) filter.tags = req.query.tag;
+    if (req.query.series) filter.series = req.query.series;
 
     // Run data fetch + count in parallel for speed
     const [data, total] = await Promise.all([
@@ -100,7 +101,7 @@ async function create(req, res, next) {
   try {
     const {
       title, authors, anonymous, excerpt, cover_image,
-      tags, body_html, content_blocks, status,
+      tags, body_html, content_blocks, status, series,
     } = req.body;
 
     const now = new Date();
@@ -113,6 +114,7 @@ async function create(req, res, next) {
       excerpt: excerpt || '',
       cover_image: cover_image || '',
       tags: tags || [],
+      series: series || '',
       published_at: status === 'published' ? now : null,
       body_html: body_html || '',
       content_blocks: content_blocks || [],
@@ -149,7 +151,7 @@ async function update(req, res, next) {
 
     const allowed = [
       'title', 'authors', 'anonymous', 'excerpt', 'cover_image',
-      'tags', 'body_html', 'content_blocks', 'status',
+      'tags', 'body_html', 'content_blocks', 'status', 'series',
     ];
     const updates = {};
     for (const key of allowed) {

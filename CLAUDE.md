@@ -71,7 +71,7 @@ docs/
 All under `/api`. Public endpoints need no auth. Protected need `Authorization: Bearer <token>`.
 
 ### Posts `/api/posts`
-- `GET /` — list published (public, paginated, `?tag=`)
+- `GET /` — list published (public, paginated, `?tag=`, `?series=`)
 - `GET /drafts/all` — list all incl. drafts/deleted (auth)
 - `GET /:identifier` — single by slug or uuid (public)
 - `POST /` — create (auth, defaults to draft)
@@ -105,6 +105,7 @@ All under `/api`. Public endpoints need no auth. Protected need `Authorization: 
 - Validation schemas defined inline in route files using `validate()`
 - Posts and events use soft delete (`deleted_at` field)
 - Admin accounts use `is_active: false` for deactivation
+- Blog posts have an optional `series` field (string, max 200 chars) for grouping into a series
 - Blog posts track all mutations in `change_log[]`
 - Posts with `anonymous: true` hide author identities in public responses
 - `authors` is an array on posts (multiple contributors supported)
