@@ -15,7 +15,7 @@ REST API for the Mevyn blog platform. Manages blog posts, upcoming events, and e
 ### With Docker (recommended for testing)
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 The API runs on `http://localhost:3000`. A seed admin account is created automatically.
