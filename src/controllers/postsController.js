@@ -54,8 +54,8 @@ async function listPublished(req, res, next) {
     const skip = (page - 1) * limit;
 
     const filter = { status: 'published', deleted_at: null };
-    if (req.query.tag) filter.tags = req.query.tag;
-    if (req.query.series) filter.series = req.query.series;
+    if (typeof req.query.tag === 'string') filter.tags = req.query.tag;
+    if (typeof req.query.series === 'string') filter.series = req.query.series;
 
     // Run data fetch + count in parallel for speed
     const [data, total] = await Promise.all([
@@ -165,8 +165,8 @@ async function update(req, res, next) {
     const now = new Date();
     updates.updated_at = now;
 
-    // Set published_at on first publish only
-    if (updates.status === 'published' && !existing.published_at) {
+    // Update published_at when (re)publishing — covers first publish and republish after unpublish
+    if (updates.status === 'published' && existing.status !== 'published') {
       updates.published_at = now;
     }
 

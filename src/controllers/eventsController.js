@@ -39,7 +39,7 @@ async function listEvents(req, res, next) {
     const skip = (page - 1) * limit;
 
     const filter = { deleted_at: null };
-    if (req.query.status) filter.status = req.query.status;
+    if (typeof req.query.status === 'string') filter.status = req.query.status;
 
     const [data, total] = await Promise.all([
       col()
@@ -88,14 +88,30 @@ async function create(req, res, next) {
       cover_image, registration_url, is_virtual, status,
     } = req.body;
 
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new AppError(400, 'Invalid date format');
+    }
+
+    let parsedEndDate = null;
+    if (end_date) {
+      parsedEndDate = new Date(end_date);
+      if (isNaN(parsedEndDate.getTime())) {
+        throw new AppError(400, 'Invalid end_date format');
+      }
+      if (parsedEndDate <= parsedDate) {
+        throw new AppError(400, 'end_date must be after date');
+      }
+    }
+
     const now = new Date();
     const event = {
       uuid: uuidv4(),
       title,
       slug: await uniqueSlug(title),
       description: description || '',
-      date: new Date(date),
-      end_date: end_date ? new Date(end_date) : null,
+      date: parsedDate,
+      end_date: parsedEndDate,
       location: location || {},
       cover_image: cover_image || '',
       registration_url: registration_url || '',
@@ -131,9 +147,16 @@ async function update(req, res, next) {
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
-        // Convert date strings to Date objects
         if (key === 'date' || key === 'end_date') {
-          updates[key] = req.body[key] ? new Date(req.body[key]) : null;
+          if (req.body[key]) {
+            const parsed = new Date(req.body[key]);
+            if (isNaN(parsed.getTime())) {
+              throw new AppError(400, `Invalid ${key} format`);
+            }
+            updates[key] = parsed;
+          } else {
+            updates[key] = null;
+          }
         } else {
           updates[key] = req.body[key];
         }
@@ -142,6 +165,13 @@ async function update(req, res, next) {
 
     if (Object.keys(updates).length === 0) {
       throw new AppError(400, 'No valid fields to update');
+    }
+
+    // Validate end_date > date using updates + existing values as fallback
+    const effectiveDate = updates.date || existing.date;
+    const effectiveEndDate = updates.end_date !== undefined ? updates.end_date : existing.end_date;
+    if (effectiveEndDate && effectiveDate && effectiveEndDate <= effectiveDate) {
+      throw new AppError(400, 'end_date must be after date');
     }
 
     updates.updated_at = new Date();

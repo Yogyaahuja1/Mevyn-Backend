@@ -133,6 +133,17 @@ async function updateAdmin(req, res, next) {
       throw new AppError(400, 'No valid fields to update');
     }
 
+    // Prevent admin from deactivating their own account
+    if (uuid === req.admin.uuid && updates.is_active === false) {
+      throw new AppError(400, 'Cannot deactivate your own account');
+    }
+
+    // Check for duplicate email
+    if (updates.email) {
+      const emailTaken = await col().findOne({ email: updates.email, uuid: { $ne: uuid } });
+      if (emailTaken) throw new AppError(409, 'Email already in use');
+    }
+
     updates.updated_at = new Date();
 
     const result = await col().findOneAndUpdate(

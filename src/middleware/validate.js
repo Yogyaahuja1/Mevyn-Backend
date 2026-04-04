@@ -1,6 +1,7 @@
 // Request body validation middleware factory.
 // Usage: validate({ title: { required: true, type: 'string', maxLength: 300 } })
-// Supports: required, type (string|boolean|number|array|object), maxLength, enum.
+// Supports: required, type (string|boolean|number|array|object), maxLength, enum,
+//           arrayOf (validates each element type), format ('url').
 
 function validate(schema) {
   return (req, res, next) => {
@@ -44,6 +45,25 @@ function validate(schema) {
       // Enum check
       if (rules.enum && !rules.enum.includes(value)) {
         errors.push(`${field} must be one of: ${rules.enum.join(', ')}`);
+      }
+
+      // Array element type validation
+      if (rules.arrayOf && Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          if (typeof value[i] !== rules.arrayOf) {
+            errors.push(`${field}[${i}] must be a ${rules.arrayOf}`);
+            break;
+          }
+        }
+      }
+
+      // URL format validation
+      if (rules.format === 'url' && typeof value === 'string' && value !== '') {
+        try {
+          new URL(value);
+        } catch {
+          errors.push(`${field} must be a valid URL`);
+        }
       }
     }
 

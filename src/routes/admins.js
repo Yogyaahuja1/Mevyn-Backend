@@ -4,6 +4,7 @@
 const { Router } = require('express');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
+const { authLimiter } = require('../middleware/rateLimiter');
 const ctrl = require('../controllers/adminsController');
 
 const router = Router();
@@ -11,6 +12,7 @@ const router = Router();
 // Public
 router.post(
   '/login',
+  authLimiter,
   validate({
     email: { required: true, type: 'string' },
     password: { required: true, type: 'string' },
@@ -23,6 +25,7 @@ router.get('/me', authenticate, ctrl.getMe);
 router.put(
   '/me/password',
   authenticate,
+  authLimiter,
   validate({
     current_password: { required: true, type: 'string' },
     new_password: { required: true, type: 'string' },
