@@ -66,13 +66,22 @@ async function changePassword(req, res, next) {
     if (!valid) throw new AppError(401, 'Current password is incorrect');
 
     const password_hash = await bcrypt.hash(new_password, SALT_ROUNDS);
+    const now = new Date();
+    // password_changed_at invalidates every token issued before this moment (see auth.js)
     await col().updateOne(
       { _id: admin._id },
-      { $set: { password_hash, updated_at: new Date() } }
+      { $set: { password_hash, password_changed_at: now, updated_at: now } }
+    );
+
+    // Hand back a fresh token so the caller's own session survives the change
+    const token = jwt.sign(
+      { uuid: admin.uuid, email: admin.email, role: admin.role, name: admin.name },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
     log.info(`Password changed for: ${admin.email}`);
-    res.json({ message: 'Password updated' });
+    res.json({ message: 'Password updated', token });
   } catch (err) {
     next(err);
   }

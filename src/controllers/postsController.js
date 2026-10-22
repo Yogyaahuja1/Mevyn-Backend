@@ -6,6 +6,7 @@ const { getDB } = require('../config/db');
 const { COLLECTIONS } = require('../helpers/collections');
 const { AppError } = require('../middleware/errorHandler');
 const log = require('../helpers/logger');
+const { sanitizePostHtml } = require('../helpers/sanitize');
 
 function col() {
   return getDB().collection(COLLECTIONS.POSTS);
@@ -116,7 +117,7 @@ async function create(req, res, next) {
       tags: tags || [],
       series: series || '',
       published_at: status === 'published' ? now : null,
-      body_html: body_html || '',
+      body_html: sanitizePostHtml(body_html), // strip scripts/handlers before storing
       content_blocks: content_blocks || [],
       status: status || 'draft',
       created_by: req.admin.uuid,
@@ -160,6 +161,11 @@ async function update(req, res, next) {
 
     if (Object.keys(updates).length === 0) {
       throw new AppError(400, 'No valid fields to update');
+    }
+
+    // Never store unsanitized HTML
+    if (updates.body_html !== undefined) {
+      updates.body_html = sanitizePostHtml(updates.body_html);
     }
 
     const now = new Date();
